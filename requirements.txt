@@ -1,0 +1,18 @@
+
+channel:
+ - conda-forge
+
+dependencies:
+
+    -scikit-learn 
+    -xgboost 
+    -lightgbm 
+    -pandas 
+    -numpy 
+    -matplotlib 
+    -seaborn 
+    -flask 
+    -python-dotenv 
+    -joblib 
+    -jupyter 
+    -ipykernel
