@@ -1,0 +1,51 @@
+{
+  "model_name": "XGBoost Tuned (GridSearchCV)",
+  "saved_at": "2026-03-16 19:54",
+  "best_params": {
+    "learning_rate": 0.05,
+    "max_depth": 4,
+    "n_estimators": 200,
+    "subsample": 0.7,
+    "scale_pos_weight": 6.18
+  },
+  "performance": {
+    "roc_auc": 0.8242,
+    "recall": 0.7901,
+    "f1": 0.4383,
+    "precision": 0.3033,
+    "accuracy": 0.7179
+  },
+  "dataset": {
+    "name": "CDC BRFSS 2015",
+    "train_samples": 202944,
+    "test_samples": 50736,
+    "features": 23,
+    "class_balance": "86.1% No Diabetes / 13.9% Diabetes",
+    "imbalance_strategy": "scale_pos_weight=6.18"
+  },
+  "feature_names": [
+    "HighBP",
+    "HighChol",
+    "BMI",
+    "Smoker",
+    "Stroke",
+    "HeartDiseaseorAttack",
+    "PhysActivity",
+    "Fruits",
+    "Veggies",
+    "HvyAlcoholConsump",
+    "GenHlth",
+    "MentHlth",
+    "PhysHlth",
+    "DiffWalk",
+    "Age",
+    "Education",
+    "Income",
+    "HealthScore",
+    "SocioScore",
+    "RiskFactorCount",
+    "LifestyleScore",
+    "BMI_Category",
+    "Age_RiskGroup"
+  ]
+}
