@@ -4,11 +4,12 @@ import os
 import sys
 
 import pandas as pd
-
+import joblib
 from dataclasses import dataclass
 
 from src.logger import logger
 from src.exception import CustomException
+from src.utils import engineer_features
 
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
@@ -23,7 +24,8 @@ class DataTransformationConfig:
     Configuration for data transformation paths.
     """
     
-    preprocessor_path: str = os.path.join('artifacts', '_model','preprocessor.pkl')
+    preprocessor_path: str = os.path.join(
+        'artifacts', '_model', 'preprocessor.pkl')
     
     
     
@@ -32,63 +34,6 @@ class DataTransformation:
     def __init__(self):
         self.config = DataTransformationConfig()
         
-    # --- Feature engineering (mirrors notebook) -------------------------------
-    def _engineer_features(self, df: pd.DataFrame) -> pd.DataFrame:
-        """
-        Adds engineered features to the DataFrame.
-        Mirrors the feature engineering steps from the notebook.
-        Called on both train and test sets.
-        Args:
-            df (pd.DataFrame): Input DataFrame with original features.
-        Returns:
-            pd.DataFrame: DataFrame with engineered features added.
-        """
-        df = df.copy()
-        
-        #drop weak features (correlation < 0.1 with target)
-        cols_to_drop = [
-            'AnyHealthcare', 'NoDocbcCost', 'Sex', 'CholCheck'
-        ]
-        df = df.drop(columns=cols_to_drop, errors='ignore')
-        
-        #Clip BMI Outliers (IQR Bounds from EDA)
-        df['BMI'] = df['BMI'].clip(lower=13.5, upper=41.5)
-        
-        #Composite scores
-        df['HealthScore']    = df['MentHlth'] + df['PhysHlth']
-        df['SocioScore']     = df['Income'] + df['Education']
-        df['LifestyleScore'] = (df['PhysActivity'] + df['Fruits'] + df['Veggies'])
-        
-        #Risk Factor Count
-        risk_cols = ['HighBP', 'HighChol', 'Smoker', 'Stroke', 'HeartDiseaseorAttack', 'HvyAlcoholConsump']
-        df['RiskFactorCount'] = df[risk_cols].sum(axis=1)
-        
-        # BMI Categories (ordinal encoding)
-        def bmi_cat(bmi):
-            if bmi < 18.5:
-                return 0  # Underweight
-            elif bmi < 25:
-                return 1  # Normal weight
-            elif bmi < 30:
-                return 2  # Overweight
-            else:
-                return 3  # Obese
-            
-        df['BMICategory'] = df['BMI'].apply(bmi_cat)
-        
-        # age risk group (ordinal encoding)
-        def age_group(age):
-            if age <= 4:
-                return 0  # Young
-            elif age <= 8:
-                return 1  # Middle-aged
-            else:
-                return 2  # Senior
-            
-        df['AgeGroup'] = df['Age'].apply(age_group)
-        
-        return df
-    
     # --- Build preprocessor (mirrors notebook) -------------------------------
     def _build_preprocessor(self) -> Pipeline:
         """
@@ -137,8 +82,8 @@ class DataTransformation:
             logger.info(f"Test dataset loaded from {test_path}. Shape: {test_df.shape}")
             
             # -- Feature engineering --------------------------------
-            train_df = self._engineer_features(train_df)
-            test_df  = self._engineer_features(test_df)
+            train_df = engineer_features(train_df)
+            test_df  = engineer_features(test_df)
             logger.info(
                 f"After engineering -"
                 f"train {train_df.shape} | "
@@ -192,6 +137,14 @@ class DataTransformation:
             
             logger.info("Data Transformation complete")
             
+            # -- Save preprocessor ---------------------------------
+            os.makedirs(
+                os.path.dirname(self.config.preprocessor_path),
+                exist_ok= True
+            )
+            joblib.dump(preprocessor, self.config.preprocessor_path)
+            logger.info(f'Preprocessor saved: {self.config.preprocessor_path}')
+            
             return (
                 X_train_smote,
                 y_train_smote,
@@ -216,16 +169,18 @@ if __name__ == "__main__":
 
     # Step 2: Run transformation
     transformation = DataTransformation()
-    (X_train, y_train,
+    (X_train_smote, y_train_smote,
+     X_train_scaled, y_train_orig,
      X_test, y_test,
      preprocessor_path) = transformation.initiate_data_transformation(
         train_path, test_path
     )
 
-    print(f"\nX_train shape : {X_train.shape}")
-    print(f"y_train shape : {y_train.shape}")
-    print(f"X_test shape  : {X_test.shape}")
-    print(f"y_test shape  : {y_test.shape}")
-    print(f"Preprocessor  : {preprocessor_path}")
+    print(f"\nX_train_smote  :{X_train_smote.shape}")
+    print(f"y_train_smote    : {y_train_smote.shape}")
+    print(f"X_train_scaled   : {X_train_scaled.shape}")
+    print(f"X_test           : {X_test.shape}")
+    print(f"y_test           : {y_test.shape}")
+    print(f"Preprocessor     : {preprocessor_path}")
     print(f"\nClass balance after SMOTE:")
-    print(f"  {pd.Series(y_train).value_counts().to_dict()}")
+    print(f"  {pd.Series(y_train_smote).value_counts().to_dict()}")

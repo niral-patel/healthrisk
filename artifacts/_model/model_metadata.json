@@ -1,6 +1,6 @@
 {
   "model_name": "XGBoost (GridSearchCV tuned)",
-  "saved_at": "2026-03-17 14:46",
+  "saved_at": "2026-03-17 18:11",
   "best_params": {
     "learning_rate": 0.05,
     "max_depth": 4,
