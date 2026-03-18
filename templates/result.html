@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prediction Result</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f0f4f8;
+            color: #333;
+        }
+        .header {
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .container {
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        /* 🏗️ Jinja2 template — result.risk_color passed from Flask */
+        .risk-high    { border-top: 6px solid #e53935; }
+        .risk-moderate{ border-top: 6px solid #f57c00; }
+        .risk-low     { border-top: 6px solid #43a047; }
+
+        .risk-icon    { font-size: 4rem; margin-bottom: 16px; }
+        .risk-label   { font-size: 1.8rem; font-weight: bold;
+                        margin-bottom: 8px; }
+        .risk-high    .risk-label    { color: #e53935; }
+        .risk-moderate .risk-label   { color: #f57c00; }
+        .risk-low     .risk-label    { color: #43a047; }
+
+        .probability  {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #1a73e8;
+            margin: 20px 0;
+        }
+        .probability span { font-size: 1.5rem; color: #888; }
+
+        .interpretation {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 24px;
+            text-align: left;
+        }
+        .interpretation h3 {
+            color: #1a73e8;
+            margin-bottom: 12px;
+        }
+        .interpretation p { line-height: 1.7; color: #555; }
+
+        .back-btn {
+            display: block;
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #1a73e8, #0d47a1);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        .back-btn:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🏥 Health Risk Predictor</h1>
+    <p>Prediction Result</p>
+</div>
+
+<div class="container">
+
+    <!-- Result card — Jinja2 renders result values -->
+    <div class="result-card risk-{{ result.risk_color }}">
+        <div class="risk-icon">
+            {% if result.risk_level == 'High' %}⚠️
+            {% elif result.risk_level == 'Moderate' %}⚡
+            {% else %}✅{% endif %}
+        </div>
+
+        <div class="risk-label">{{ result.label }}</div>
+
+        <div class="probability">
+            {{ result.probability }}
+            <span>% probability</span>
+        </div>
+
+        <div style="font-size:1.1rem; color:#666;">
+            Risk Level:
+            <strong>{{ result.risk_level }}</strong>
+        </div>
+    </div>
+
+    <!-- Clinical recommendation -->
+    <div class="interpretation">
+        <h3>📋 Clinical Recommendation</h3>
+        {% if result.risk_level == 'High' %}
+        <p>
+            <strong>High Risk (≥60% probability):</strong>
+            Patient shows multiple diabetes risk factors.
+            Recommend immediate clinical glucose testing,
+            HbA1c screening, and lifestyle intervention program.
+            Consider referral to endocrinologist.
+        </p>
+        {% elif result.risk_level == 'Moderate' %}
+        <p>
+            <strong>Moderate Risk (30-60% probability):</strong>
+            Some risk factors present. Recommend annual
+            glucose screening, dietary consultation, and
+            physical activity program.
+        </p>
+        {% else %}
+        <p>
+            <strong>Low Risk (&lt;30% probability):</strong>
+            Patient shows few diabetes risk factors.
+            Continue healthy lifestyle. Routine annual
+            checkup recommended.
+        </p>
+        {% endif %}
+    </div>
+
+    <!-- 🔒 SECURITY: No raw patient data shown on result page
+         In production, never display PHI back to user
+         unless required and properly secured -->
+
+    <a href="/" class="back-btn">
+        ← Assess Another Patient
+    </a>
+
+</div>
+
+</body>
+</html>

@@ -1,8 +1,8 @@
 env/
 # Artifacts — ignore large binaries, keep images and metadata
-artifacts/*.pkl
-artifacts/*.csv
-artifacts/*.h5
+artifacts/_data/
+artifacts/_model/*.pkl
+artifacts/_model/*.h5
 logs/
 __pycache__/
 *.pyc
